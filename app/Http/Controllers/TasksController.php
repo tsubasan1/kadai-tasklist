@@ -13,18 +13,27 @@ class TasksController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
     // getでtasks/にアクセスされた場合の「一覧表示処理」
     public function index()
+    
     {
-        // タスク一覧を取得
-        $tasks = Task::all();
-        
-        // タスク一覧ビューでそれを表示
-        return view('tasks.index', [
+    $data = [];
+    if (\Auth::check()) { // 認証済みの場合
+        // 認証済みユーザを取得
+        $user = \Auth::user();
+        // ユーザの投稿の一覧を作成日時の降順で取得
+        $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+
+        $data = [
+            'user' => $user,
             'tasks' => $tasks,
-        ]);
+        ];
     }
 
+    // Welcomeビューでそれらを表示
+    return view('welcome', $data);
+}
 
 
     /**
@@ -43,7 +52,6 @@ class TasksController extends Controller
             'task' => $task,
         ]);
     }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -58,15 +66,17 @@ class TasksController extends Controller
             'content' => 'required|max:255',
         ]);
 
+        // 認証済みユーザ（閲覧者）の投稿として作成（リクエストされた値をもとに作成）
+        $request->user()->tasks()->create([
         // タスクを作成
-        $task = new Task;
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
-
+        'status' => $request->status,
+        'content' => $request->content,
+        
+        ]);
         // トップページへリダイレクトさせる
         return redirect('/');
     }
+
 
     /**
      * Display the specified resource.
@@ -85,10 +95,6 @@ class TasksController extends Controller
             'task' => $task,
         ]);
     }
-
-    
-    
-
     /**
      * Show the form for editing the specified resource.
      *
@@ -116,6 +122,7 @@ class TasksController extends Controller
     // putまたはpatchでmessages/idにアクセスされた場合の「更新処理」
     public function update(Request $request, $id)
     {
+
        // バリデーション
         $request->validate([
             'status' => 'required|max:10',   // 追加
@@ -147,5 +154,5 @@ class TasksController extends Controller
 
         // トップページへリダイレクトさせる
         return redirect('/');
-    }
+    }    
 }

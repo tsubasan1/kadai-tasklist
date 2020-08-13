@@ -2,13 +2,6 @@
 
 @section('content')
 
-    @if (count($errors) > 0)
-        <ul class="alert alert-danger" role="alert">
-            @foreach ($errors->all() as $error)
-                <li class="ml-4">{{ $error }}</li>
-            @endforeach
-        </ul>
-    @endif
 
     <h1>タスク新規作成ページ</h1>
 
@@ -27,7 +20,7 @@
                 </div>
 
             {!! Form::submit('投稿', ['class' => 'btn btn-primary']) !!}
-        {!! Form::close() !!}
+            {!! Form::close() !!}
         </div>
     </div>
 @endsection
