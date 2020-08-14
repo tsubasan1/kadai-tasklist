@@ -1,22 +1,5 @@
-<?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-
-use App\Task;    // 追加
-
-class TasksController extends Controller
-{
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-
     // getでtasks/にアクセスされた場合の「一覧表示処理」
     public function index()
-    
     {
     $data = [];
     if (\Auth::check()) { // 認証済みの場合
@@ -34,6 +17,7 @@ class TasksController extends Controller
     // Welcomeビューでそれらを表示
     return view('welcome', $data);
 }
+
 
     /**
      * Show the form for creating a new resource.
@@ -72,8 +56,8 @@ class TasksController extends Controller
         'content' => $request->content,
         
         ]);
-        // トップページへリダイレクトさせる
-        return redirect('/');
+        // Welcomeビューでそれらを表示
+        return view('welcome', $data);
     }
 
 
@@ -86,20 +70,16 @@ class TasksController extends Controller
    // getでtasks/idにアクセスされた場合の「取得表示処理」
     public function show($id)
     {
-        // idの値でメッセージを検索して取得
-        $task = \App\Task::findOrFail($id);
-        // 認証済みユーザ（閲覧者）がそのタスクの所有者である場合は、
-        if (\Auth::id() === $task->user_id) {
-        // タスク詳細ビューでそれを表示
+        // idの値でユーザを検索して取得
+        $user = User::findOrFail($id);
+
+        // ユーザ詳細ビューでそれらを表示
         return view('tasks.show', [
-            'task' => $task,
+            'user' => $user,
+            'tasks' => $tasks,
         ]);
-        }
-
-        // トップページへリダイレクトさせる
-        return redirect('/');
-
     }
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -109,19 +89,13 @@ class TasksController extends Controller
     // getでtasks/id/editにアクセスされた場合の「更新画面表示処理」
     public function edit($id)
     {
-        // idの値でタスクを検索して取得
-        $task = \App\Task::findOrFail($id);
-        // 認証済みユーザ（閲覧者）がそのタスクの所有者である場合は、
-        if (\Auth::id() === $task->user_id) {
-        // タスク編集ビューでそれを表示
+        // idの値でメッセージを検索して取得
+        $task = Task::findOrFail($id);
+
+        // メッセージ編集ビューでそれを表示
         return view('tasks.edit', [
             'task' => $task,
         ]);
-        }
-
-        // トップページへリダイレクトさせる
-        return redirect('/');
-
     }
     /**
      * Update the specified resource in storage.
@@ -133,7 +107,7 @@ class TasksController extends Controller
     // putまたはpatchでmessages/idにアクセスされた場合の「更新処理」
     public function update(Request $request, $id)
     {
-
+        
        // バリデーション
         $request->validate([
             'status' => 'required|max:10',   // 追加
@@ -141,14 +115,11 @@ class TasksController extends Controller
         ]);
         
         // idの値でタスクを検索して取得
-        $task = \App\Task::findOrFail($id);
-        // 認証済みユーザ（閲覧者）がそのタスクの所有者である場合は、
-        if (\Auth::id() === $task->user_id) {
-        // タスクを更新
+        $task = Task::findOrFail($id);
+        // メッセージを更新
         $task->status = $request->status;
         $task->content = $request->content;
         $task->save();
-        }
 
         // トップページへリダイレクトさせる
         return redirect('/');
@@ -159,29 +130,17 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-/*    public function destroy($id)
-    {
-        // idの値でタスクを検索して取得
-        $task = Task::findOrFail($id);
-        // タスクを削除
-        $task->delete();
-
-        // トップページへリダイレクトさせる
-        return redirect('/');
-    }    
-*/
-
     public function destroy($id)
     {
         // idの値で投稿を検索して取得
         $task = \App\Task::findOrFail($id);
 
-        // 認証済みユーザ（閲覧者）がそのタスクの所有者である場合は、タスクを削除
+        // 認証済みユーザ（閲覧者）がその投稿の所有者である場合は、投稿を削除
         if (\Auth::id() === $task->user_id) {
             $task->delete();
         }
 
         // トップページへリダイレクトさせる
         return redirect('/');
-    }
+    }    
 }
